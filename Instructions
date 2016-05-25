@@ -1,0 +1,110 @@
+Required: CentOS6 64-bits  new image
+
+1. login as root and we need connect to internet for downloading
+   #cd /opt  
+   #mkdir mono
+2. get all updates
+3. #cd /etc/yum.repos.d
+4. #yum install epel-release
+5. #cd /usr/src
+6. #yum install bison  bzip2  dos2unix  cairo-devel gcc-c++ gcc gettext  glib2-devel  freetype-devel httpd-devel 
+   libjpeg-devel(or libjpeg-turbo-devel) libtiff-devel libungif-devel(not exist?) libpng-devel libtool make fontconfig-devel
+   giflib-devel libexif-devel patch pkgconfig zlib-devel
+               
+7. #wget http://download.mono-project.com/sources/mono/mono-4.2.2.30.tar.bz2
+   #wget https://github.com/mono/xsp/archive/e272a2c006211b6b03be2ef5bbb9e3f8fefd0768.tar.gz   (for xsp)
+   #wget http://download.mono-project.com/sources/mod_mono/mod_mono-3.12.tar.gz 
+   #wget http://download.mono-project.com/sources/libgdiplus/libgdiplus-2.10.9.tar.bz2
+   
+8. #tar -xjf mono-4.2.2.30.tar.bz2
+   #tar -zxvf e272a2c006211b6b03be2ef5bbb9e3f8fefd0768.tar.gz
+   #tar -zxvf mod_mono-3.12.tar.gz   
+   #tar -xjf libgdiplus-2.10.9.tar.bz2
+ 
+9. Compile, make and install for libgdiplus
+   #cd libgdiplus-2.10.9
+   #./configure --prefix=/opt/mono
+   #make ; make install
+   
+10. Compile, make and install for mono-4.2.2.30
+    #cd ../mono-4.2.2
+    #./configure  --prefix=/opt/mono --with-libgdiplus=/opt/mono
+    #make ; make install
+	
+11. Create a shell script to set mono environment 
+    #cd /opt/mono
+    add this file: env.sh
+    export PATH=/opt/mono/bin:$PATH
+    export LD_LIBRARY_PATH=/opt/mono/lib:$LD_LIBRARY_PATH
+    export PKG_CONFIG_PATH=/opt/mono/lib/pkgconfig:$PKG_CONFIG_PATH
+   
+    #chmod a+x env.sh
+    So, we can set environment variables by  #. /opt/mono/env.sh
+	
+12. Compile and install xsp
+    #. /opt/mono/env.sh
+    #cd /usr/src/xsp-e272a2c006211b6b03be2ef5bbb9e3f8fefd0768
+    #./autogen.sh --prefix=/opt/mono
+    #make
+    #make install
+	
+13. Compile and install mod_mono
+    #cd /usr/src/mod_mono-3.12
+    #./configure --prefix=/opt/mono --with-mono-prefix=/opt/mono 
+    #make
+    #make install
+    #mv /etc/httpd/conf/mod_mono.conf /etc/httpd/conf.d/
+	
+14. To set apache to run asp.net 
+    #chmod -R 777 /tmp
+   
+    Add these to /etc/ld.so.conf ( first line for apache, rest of them for PWM jbase)
+	(Create /etc/ld/so/conf.d/pwsasp.conf and add below if /etc/ld.so.conf.d/*.conf exists, also for add user apache to group pw)
+    /opt/mono/lib/
+	
+     #ldconfig
+     #cd /var/www
+     #mkdir -p ~apache/.mono
+     #chown -R apache:apache ~apache/.mono 
+     #chmod –R u+rw ~apache/.mono 
+	
+	
+15.For xsp4 
+   to check/test
+   #cd /opt/mono/lib/xsp/test
+   #xsp4
+   In url of a browser enter http://localhost:9000
+	
+16. For apache to work:
+    Now, in order to let apache mod_mono asp.net web site running:
+    Set “SELINUX=permissive”  for SELinux and reboot
+    (/etc/selinux/config)
+	
+	
+    add 
+     "Listen 8080" 
+     after line 
+     "Listen 80"
+     in /etc/httpd/conf/httpd.conf
+     Also append setting below to bottom of file /etc/httpd/conf/httpd.conf
+	
+	<VirtualHost *:8080>
+          ServerName AspNetOnApache
+          ServerAdmin web-admin@AspNetOnApache
+          DocumentRoot /opt/mono/lib/xsp/test
+
+          MonoServerPath AspNetOnApache "/opt/mono/bin/mod-mono-server4"
+          MonoDebug AspNetOnApache true
+          MonoSetEnv AspNetOnApache MONO_IOMAP=all
+
+          MonoApplications AspNetOnApache "/:/opt/mono/lib/xsp/test"
+          <Location "/">
+            MonoSetServerAlias AspNetOnApache
+            SetHandler mono
+         </Location>
+       </VirtualHost>
+	(DOT NOT FORGET re-root the box )
+	After httpd restart
+	browser url http://localhost:8080/
+   
+ 17.  Don't forget to run #. /opt/mono/env.sh 

@@ -8,7 +8,7 @@ Required: CentOS6 64-bits  new image
 4. #yum install epel-release
 5. #cd /usr/src
 6. #yum install bison  bzip2  dos2unix  cairo-devel gcc-c++ gcc gettext  glib2-devel  freetype-devel httpd-devel 
-   libjpeg-devel(or libjpeg-turbo-devel) libtiff-devel libungif-devel(not exist?) libpng-devel libtool make fontconfig-devel
+   libjpeg-devel(or libjpeg-turbo-devel) libtiff-devel libpng-devel libtool make fontconfig-devel
    giflib-devel libexif-devel patch pkgconfig zlib-devel
                
 7. #wget http://download.mono-project.com/sources/mono/mono-4.2.2.30.tar.bz2
@@ -39,7 +39,8 @@ Required: CentOS6 64-bits  new image
     export PKG_CONFIG_PATH=/opt/mono/lib/pkgconfig:$PKG_CONFIG_PATH
    
     #chmod a+x env.sh
-    So, we can set environment variables by  #. /opt/mono/env.sh
+    So, we can set environment variables by:
+    #. /opt/mono/env.sh
 	
 12. Compile and install xsp
     #. /opt/mono/env.sh
@@ -58,8 +59,7 @@ Required: CentOS6 64-bits  new image
 14. To set apache to run asp.net 
     #chmod -R 777 /tmp
    
-    Add these to /etc/ld.so.conf ( first line for apache, rest of them for PWM jbase)
-	(Create /etc/ld/so/conf.d/pwsasp.conf and add below if /etc/ld.so.conf.d/*.conf exists, also for add user apache to group pw)
+    Add these to /etc/ld.so.conf 
     /opt/mono/lib/
 	
      #ldconfig
@@ -86,7 +86,7 @@ Required: CentOS6 64-bits  new image
      after line 
      "Listen 80"
      in /etc/httpd/conf/httpd.conf
-     Also append setting below to bottom of file /etc/httpd/conf/httpd.conf
+     Also append below to bottom of file /etc/httpd/conf/httpd.conf
 	
 	<VirtualHost *:8080>
           ServerName AspNetOnApache
@@ -107,4 +107,4 @@ Required: CentOS6 64-bits  new image
 	After httpd restart
 	browser url http://localhost:8080/
    
- 17.  Don't forget to run #. /opt/mono/env.sh 
+ 17.  Don't forget to run #. /opt/mono/env.sh  next time
